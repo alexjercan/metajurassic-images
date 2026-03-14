@@ -1,6 +1,5 @@
 """ Python Tool script that uses https://dinosaurpictures.org/*-pictures to download pictures of dinosaurs. """
 
-import json
 import os
 from typing import Optional
 
