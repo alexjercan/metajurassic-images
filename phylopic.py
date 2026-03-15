@@ -1,7 +1,8 @@
+import json
 import logging
 import os
 import urllib.parse
-from typing import Optional
+from typing import Optional, Tuple
 
 import requests
 from rich.progress import track
@@ -10,7 +11,8 @@ logger = logging.getLogger(__name__)
 
 PHYLOPIC_BASE_URL = "https://api.phylopic.org"
 INDEX_JSON_URL = "https://raw.githubusercontent.com/alexjercan/metajurassic/refs/heads/master/src/jurassic/index.json"
-SILHOUETTE_PATH = "silhouette"
+IMAGES_PATH = "images"
+SILHOUETTE_PATH = os.path.join(IMAGES_PATH, "silhouettes")
 SILHOUETTE_SPECIES_PATH = os.path.join(SILHOUETTE_PATH, "species")
 
 
@@ -33,7 +35,7 @@ def build_phylopic_url(species: str) -> str:
     return f"{PHYLOPIC_BASE_URL}/images?{urllib.parse.urlencode(query)}"
 
 
-def download_svg(species: str) -> Optional[bytes]:
+def download_svg(species: str) -> Optional[Tuple[bytes, str]]:
     url = build_phylopic_url(species)
 
     response = requests.get(url, headers={"accept": "application/vnd.phylopic.v2+json"})
@@ -61,7 +63,7 @@ def download_svg(species: str) -> Optional[bytes]:
 
     svg_response = requests.get(best_vector["href"])
     svg_response.raise_for_status()
-    return svg_response.content
+    return svg_response.content, best_vector["href"]
 
 
 if __name__ == "__main__":
@@ -69,15 +71,21 @@ if __name__ == "__main__":
     os.makedirs(SILHOUETTE_SPECIES_PATH, exist_ok=True)
     data = download_dinosaur_index()
 
+    mapping = {}
     for species, _ in track(data["species"].items()):
         try:
-            svg_content = download_svg(species)
+            response = download_svg(species)
         except Exception as e:
             logger.error("Failed to download SVG for %s: %s", species, e)
             continue
 
-        if svg_content is None:
+        if response is None:
             continue
 
+        svg_content, svg_url = response
+        mapping[species] = svg_url
         with open(os.path.join(SILHOUETTE_SPECIES_PATH, f"{species}.svg"), "wb") as f:
             f.write(svg_content)
+
+    with open(os.path.join(SILHOUETTE_PATH, "mapping.json"), "w") as fg:
+        json.dump(mapping, fg, indent=2)
