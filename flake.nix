@@ -104,7 +104,7 @@
         _module.args.pkgs = import self.inputs.nixpkgs {
           inherit system;
           config.allowUnfree = true;
-          config.cudaSupport.enable = true;
+          config.cudaSupport = false;
         };
 
         # Create a derivation that wraps the venv but that only links package
@@ -131,6 +131,7 @@
             virtualenv
             pkgs.uv
             pkgs.nodejs
+            pkgs.rembg
           ];
           env = {
             # Prevent uv from managing a virtual environment, this is managed by uv2nix.

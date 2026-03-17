@@ -10,7 +10,7 @@ from rich.progress import track
 DINOSAUR_PICTURES_URL = "https://dinosaurpictures.org/{dinosaur_name}-pictures"
 INDEX_JSON_URL = "https://raw.githubusercontent.com/alexjercan/metajurassic/refs/heads/master/src/jurassic/index.json"
 IMAGES_PATH = "images"
-IMAGES_SPECIES_PATH = os.path.join(IMAGES_PATH, "species")
+IMAGES_SPECIES_PATH = os.path.join(IMAGES_PATH, "dinosaurpictures")
 
 
 def download_dinosaur_index() -> dict:
